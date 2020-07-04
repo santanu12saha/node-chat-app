@@ -9,7 +9,7 @@
   },
   "engines": {
     "node": "10.21.0"
-  }, 
+  },
   "keywords": [
     "chat",
     "app",
@@ -19,6 +19,7 @@
   "author": "Santanu Saha",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
   }
 }
