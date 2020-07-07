@@ -36,6 +36,10 @@ socket.on('updateUserList', function (users) {
     jQuery('#users').html(html);
 });
 
+socket.on('updateRoomList', function (rooms) {
+    console.log(rooms);
+});
+
 socket.on('disconnect', function () {
     console.log('Disconnected from server');
 });

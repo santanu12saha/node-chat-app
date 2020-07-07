@@ -171,6 +171,11 @@
   .message__title span {
     color: #999;
   }
+
+  #chat__available__rooms {
+    width: 100%;
+    background: white;
+  }
   
   @media (max-width: 600px) {
     * {
