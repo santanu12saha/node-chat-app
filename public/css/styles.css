@@ -125,6 +125,14 @@
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
   }
+
+  .chat__user_typing {
+    margin: 0px 0px 3px 9px;
+    font-size: 13px;
+    display: inline-flex;
+    color: #999;
+  }
+  
   
   .chat__footer {
     background: #e6eaee;
@@ -198,3 +206,4 @@
       margin-right: 0px;
     }
   }
+

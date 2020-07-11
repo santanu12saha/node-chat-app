@@ -70,6 +70,17 @@ socket.on('newLocationMessage', function (message) {
     scrollToBottom();
 });
 
+jQuery('[name=message]').keydown(function (e) {
+    socket.emit('typing', true);
+   
+});
+
+jQuery('[name=message]').keyup(function (e) {
+    if(e.target.value.length == 0){
+        socket.emit('typing', false); 
+    }
+});
+
 jQuery('#message-form').on('submit', function (e) {
     e.preventDefault();
 
@@ -79,7 +90,12 @@ jQuery('#message-form').on('submit', function (e) {
         text: messageTextbox.val()
     }, function () {
         messageTextbox.val('');
+        socket.emit('typing', false); 
     });
+});
+
+socket.on('displayTypingName', function(data) {
+    jQuery('#typing').text(data);
 });
 
 var locationButton = jQuery('#send-location');

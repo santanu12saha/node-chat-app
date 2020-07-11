@@ -46,6 +46,19 @@ io.on('connection', (socket) => {
         callback();
     });
 
+    socket.on('typing', (isTyping) => {
+        var typingUserName = [];
+        var user = users.getUser(socket.id);
+        if(user) {
+            if(isTyping){
+                typingUserName.push(user.name)
+                socket.broadcast.to(user.room).emit('displayTypingName', `${user.name} is typing...`);
+            }else{
+                socket.broadcast.to(user.room).emit('displayTypingName', "");
+            }
+        }
+    })
+
     socket.on('createMessage', (message, callback) => {
         var user = users.getUser(socket.id);
         if (user && isRealString(message.text)) {
