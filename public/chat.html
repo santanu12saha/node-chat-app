@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Chat | ChatApp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 
@@ -21,10 +22,12 @@
                 <input name="message" type="text" placeholder="Message" autofocus autocomplete="off"/>
                 <button>Send</button>
             </form>
+            <button id="call">Call</button>
             <button id="send-location">Send location</button>
         </div>
     </div>
-
+    <div id="modal-user-list"></div>
+    <div id="modal-call-progress"></div>
     <script id="message-template" type="text/template">
         <li class="message">
             <div class="message__title">
@@ -57,6 +60,64 @@
                 <li>{{.}}</li>
             {{/users}}
         </ol>
+    </script>
+
+    <script id="modal-popup" type="text/template">
+        <div class="modal">
+            <div class="modal-toggle"></div>
+            <div class="modal-wrapper modal-transition">
+              <div class="modal-header">
+                <button id="modalbutton" class="modal-close modal-toggle">&times;</button>
+                <h2 class="modal-heading">{{title}}</h2>
+              </div>
+              <div class="modal-body">
+                <div class="modal-content"></div>
+              </div>
+              <div class="modal-footer">
+                <div class="center">
+                    <button id="audio-call"><i class="fa fa-phone fa-lg" aria-hidden="true"></i></button>
+                    <button id="video-call"><i class="fa fa-video-camera fa-lg" aria-hidden="true"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </script>
+
+    <script id="user-modal-list-template" type="text/template">
+        <div data-role="page" id="page1">
+            <div id="contDiv">
+                <div id="listDiv">
+                    {{#users}}
+                    <ul id="list" data-role="listview">
+                        <label><input type="checkbox" value="{{.}}" name="users" id="users">{{.}}</label>
+                    </ul>
+                    {{/users}}
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script id="video-modal-template" type="text/template">
+        <div class="modal" id="call-modal">
+            <div class="video-modal-toggle"></div>
+            <div class="modal-wrapper modal-transition">
+              <div class="modal-header">
+                <button id="modalbutton" class="modal-close video-modal-toggle">&times;</button>
+                <h2 class="modal-heading" id="talking-with-info">Calling to {{user}}</h2>
+              </div>
+              <div class="modal-body">
+                <div class="modal-content-video">
+                    <div class="video-chat-container">
+                        <div class="video-container">
+                          <video autoplay class="remote-video" id="remote-video"></video>
+                          <video autoplay muted class="local-video" id="local-video"></video>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
     </script>
 
     <script src="/socket.io/socket.io.js"></script>

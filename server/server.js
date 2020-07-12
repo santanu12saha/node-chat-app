@@ -74,6 +74,32 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("call-user", (data) => {
+        var user = users.getUserByName(data.to);
+        if(user) {
+            socket.to(user.id).emit("call-made", {
+                offer: data.offer,
+                socket: socket.id,
+                name: user.name
+            });
+        }
+       
+    });
+
+    socket.on("make-answer", data => {
+        socket.to(data.to).emit("answer-made", {
+          socket: socket.id,
+          answer: data.answer
+        });
+    });
+
+    socket.on("reject-call", data => {
+        var user = users.getUser(socket.id);
+        socket.to(data.from).emit("call-rejected", {
+            name: user.name
+        });
+    });
+
     socket.on('disconnect', () => {
         var user = users.removeUser(socket.id);
         if(user){
