@@ -1,13 +1,27 @@
 var socket = io();
 var params = null;
-let isAlreadyCalling = false;
+let answersFrom = {};
 let getCalled = false;
 
 const existingCalls = [];
 
-const { RTCPeerConnection, RTCSessionDescription } = window;
+var sessionDescription = window.RTCSessionDescription ||
+    window.mozRTCSessionDescription ||
+    window.webkitRTCSessionDescription ||
+    window.msRTCSessionDescription;
 
-const peerConnection = new RTCPeerConnection();
+var pc = window.RTCPeerConnection ||
+    window.mozRTCPeerConnection ||
+    window.webkitRTCPeerConnection ||
+    window.msRTCPeerConnection;
+
+    navigator.getUserMedia  = navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia;    
+
+const peerConnection = new pc();
+
 var modalTemplate = jQuery('#modal-popup').html();
 var modalHtml = Mustache.render(modalTemplate, {
     title: 'Available users in room'
@@ -208,7 +222,7 @@ function invokeUserMedia(mediaType) {
             break;    
     }
 
-    navigator.getUserMedia({ video: true, audio: true }, function(stream) {
+    navigator.getUserMedia(mediaConstraintObject, function(stream) {
         const localVideo = document.getElementById("local-video");
         if (localVideo) {
             localVideo.srcObject = stream;
@@ -216,25 +230,28 @@ function invokeUserMedia(mediaType) {
         stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
         $('.video-modal-toggle').on('click', function(e) {
             e.preventDefault();
-            stream.getTracks().forEach(function(track) { track.stop(); })
+           // stream.getTracks().forEach(function(track) { track.stop(); })
+            getCalled = false;
         });
     
     }, function(error) {
         console.warn(error.message);
     })
+    
 }
 
-async function callUser(name) {
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(new RTCSessionDescription(offer));
-
-    socket.emit("call-user", {
-        offer,
-        to: name
-    });
+function callUser(name) {
+    peerConnection.createOffer(function (offer) {
+        peerConnection.setLocalDescription(new sessionDescription(offer), function () {
+            socket.emit("call-user", {
+                offer,
+                to: name
+            });
+        }, error);
+    }, error);
 }
 
-socket.on("call-made", async data => {
+socket.on("call-made", data => {
     if (getCalled) {
       const confirmed = confirm(
         `User ${data.name} wants to call you. Do accept this call?`
@@ -250,28 +267,26 @@ socket.on("call-made", async data => {
     }
   
     console.log(data);
-    await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(data.offer)
-    );
-    const answer = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(new RTCSessionDescription(answer));
-  
-    socket.emit("make-answer", {
-      answer,
-      to: data.socket
-    });
+    peerConnection.setRemoteDescription(new sessionDescription(data.offer), function () {
+        peerConnection.createAnswer(function (answer) {
+            peerConnection.setLocalDescription(new sessionDescription(answer), function () {
+                socket.emit("make-answer", {
+                    answer,
+                    to: data.socket
+                  });
+            }, error);
+        }, error);
+    }, error);
     getCalled = true;
   });
 
-  socket.on("answer-made", async data => {
-    await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(data.answer)
-    );
-  
-    if (!isAlreadyCalling) {
-      callUser(data.socket);
-      isAlreadyCalling = true;
-    }
+  socket.on("answer-made", data => {
+    peerConnection.setRemoteDescription(new sessionDescription(data.answer), function () {
+        if (!answersFrom[data.socket]) {
+            callUser(data.socket);
+            answersFrom[data.socket] = true;
+        }
+    }, error);
   });
 
   socket.on("call-rejected", data => {
@@ -285,5 +300,8 @@ socket.on("call-made", async data => {
     }
   };
 
+function error(err) {
+    console.warn('Error', err);
+}
  
 
